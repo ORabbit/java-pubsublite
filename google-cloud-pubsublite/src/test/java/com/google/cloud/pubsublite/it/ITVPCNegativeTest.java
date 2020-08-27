@@ -49,6 +49,9 @@ import com.google.cloud.pubsublite.proto.Subscription.DeliveryConfig.DeliveryReq
 import com.google.cloud.pubsublite.proto.Topic;
 import com.google.cloud.pubsublite.proto.Topic.PartitionConfig;
 import com.google.cloud.pubsublite.proto.Topic.RetentionConfig;
+import com.google.cloud.resourcemanager.Project;
+import com.google.cloud.resourcemanager.ResourceManager;
+import com.google.cloud.resourcemanager.ResourceManagerOptions;
 import com.google.protobuf.FieldMask;
 import com.google.protobuf.util.Durations;
 import io.grpc.Status;
@@ -74,10 +77,8 @@ public class ITVPCNegativeTest {
   private static final boolean IS_VPCSC_TEST =
       System.getenv("GOOGLE_CLOUD_TESTS_IN_VPCSC") != null
           && System.getenv("GOOGLE_CLOUD_TESTS_IN_VPCSC").equalsIgnoreCase("true");
-  private static final String OUTSIDE_VPCSC_PROJECT =
-      System.getenv("GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT_NUMBER");
-  private static final Long PROJECT_NUMBER =
-      OUTSIDE_VPCSC_PROJECT == null ? 0 : Long.parseLong(OUTSIDE_VPCSC_PROJECT);
+  private static final String OUTSIDE_VPCSC_PROJECT_ID =
+      System.getenv("GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT");
   private static final String CLOUD_REGION = "us-central1";
   private static final char ZONE_ID = 'b';
   private static final String SUFFIX = UUID.randomUUID().toString();
@@ -108,15 +109,24 @@ public class ITVPCNegativeTest {
         IS_VPCSC_TEST);
 
     // If IS_VPCSC_TEST is true we require the following env variables.
-    requireEnvVar("GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT_NUMBER");
+    requireEnvVar("GOOGLE_CLOUD_TESTS_VPCSC_OUTSIDE_PERIMETER_PROJECT");
   }
 
   @Before
   public void setUp() throws Exception {
+    ResourceManager resourceManager = ResourceManagerOptions.getDefaultInstance().getService();
+    Project project = resourceManager.get(OUTSIDE_VPCSC_PROJECT_ID);
+    assertNotNull(
+        "The project number could not be found from project id ("
+            + OUTSIDE_VPCSC_PROJECT_ID
+            + "). User may not have read permissions or it does not exist.",
+        project);
+    Long projectNumber = project.getProjectNumber();
+
     // Set up configs for location, topic, and subscription to test against.
     CloudRegion cloudRegion = CloudRegion.of(CLOUD_REGION);
     CloudZone zone = CloudZone.of(cloudRegion, ZONE_ID);
-    ProjectNumber projectNum = ProjectNumber.of(PROJECT_NUMBER);
+    ProjectNumber projectNum = ProjectNumber.of(projectNumber);
     locationPath = LocationPaths.newBuilder().setProjectNumber(projectNum).setZone(zone).build();
     TopicName topicName = TopicName.of(TOPIC_NAME);
     topicPath =
