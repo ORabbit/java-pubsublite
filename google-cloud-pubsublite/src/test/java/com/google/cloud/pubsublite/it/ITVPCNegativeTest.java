@@ -377,4 +377,31 @@ public class ITVPCNegativeTest {
       checkExceptionForVPCError(toCanonical(e.getCause()));
     }
   }
+
+  // @Test
+  // public void deniedComputeMessageStats() {
+  //   try {
+  //     serviceHelper.reset();
+  //     channelProvider = serviceHelper.createChannelProvider();
+  //     TopicStatsServiceSettings settings =
+  //         TopicStatsServiceSettings.newBuilder()
+  //             .setTransportChannelProvider(channelProvider)
+  //             .setCredentialsProvider(NoCredentialsProvider.create())
+  //             .build();
+  //     client = TopicStatsServiceClient.create(settings);
+
+  //     ComputeMessageStatsRequest request =
+  //         ComputeMessageStatsRequest.newBuilder()
+  //             .setTopic(topicPath.toString())
+  //             .setPartition(123L)
+  //             .build();
+
+  //     client.computeMessageStats(request);
+
+  //   } catch (InterruptedException e) {
+  //     fail("Expected PERMISSION_DENIED StatusRuntimeException but got: " + e.toString());
+  //   } catch (ExecutionException e) {
+  //     checkExceptionForVPCError(toCanonical(e.getCause()));
+  //   }
+  // }
 }
